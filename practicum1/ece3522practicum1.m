@@ -5,9 +5,10 @@
 %      By: Leomar Duran <https://github.com/lduran2>
 %    When: 2020-10-07t05:56
 %     For: ECE 3522/Stochastic Processes
-% Version: 1.7
+% Version: 1.8
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CHANGELOG
+%     1.8 - Calculated the analytical expected values.
 %     1.7 - Moved computation of properties into its own function.
 %     1.6 - Calculated expectation, standard deviation,
 %           P(X = 6|X >= 4).
@@ -16,9 +17,13 @@
 %     1.2 - Calculated 1000 dice faces.
 %     1.0 - Calculated the cdf.
 
+% clear the namespace
+clear;
+
 % Constants
 N_ROLLS = 1000;                         % number of rolls requested
 PMF = [0.2, 0.2, 0.2, 0.2, 0.1, 0.1];   % probability mass function
+EXPECTED_CARDINALITY = N_ROLLS * PMF;   % the expected cardinalities analytically
 
 % iterable for X
 nImgX = length(PMF);    % cardinality of Image of X
@@ -40,7 +45,7 @@ freqs = (cards/N_ROLLS);                % calc the relative frequencies
 errFreqs = ((freqs - PMF)./PMF);        % calc the relative errors
 % loop through X values
 for k = imgX
-    fprintf('The frequency of %d is %0.4f,', k, freqs(k));
+    fprintf('The frequency of %ds is %0.4f,', k, freqs(k));
     fprintf(' with relative error %+0.4f.\n', errFreqs(k));
 end % for k
 
@@ -56,11 +61,35 @@ ylim([0,(max(PMF) + 0.05)])                     % PX(k) in [0,1]
 %% Part 2
 % Compute the expectation, standard deviation, P(X = 6|X >= 4)
 [EX, sX, P_X6_Xge4] = computeProperties(imgX, nImgX, cards, freqs, N_ROLLS);
+vX = [EX, sX, P_X6_Xge4];   % vector of X properties
+
+%% Part 3
+% Analytically (use the equations, not through simulations) compute and
+% report the following values: expected value, standard deviation, and
+% conditional probability P(X = 6|x >= 4).
+[EY, sY, P_Y6_Yge4] = ...
+        computeProperties(imgX, nImgX, EXPECTED_CARDINALITY, PMF, N_ROLLS);
+vY = [EY, sY, P_Y6_Yge4];   % vector of Y properties
+% calculate the relative errors
+cellErrX = num2cell((vX - vY)./vY);
+[errEX, errSX, err_P_X6_Xge4] = deal(cellErrX{:});
 
 % display the results
-fprintf('\n                            The average value of X is\t%0.4f.\n', EX);
-fprintf(  '                       The standard deviation of X is\t%0.4f.\n', sX);
-fprintf(  'The probability rolling a 6 given the roll is >= 4 is\t%0.4f.\n', P_X6_Xge4);
+fprintf('\nSimulations with 1000 rolls\n');
+fprintf('                                       The average value is\t%0.4f.\n', EX);
+fprintf('                                  The standard deviation is\t%0.4f.\n', sX);
+fprintf('   The probability of rolling a 6 given the roll is >= 4 is\t%0.4f.\n', P_X6_Xge4);
+
+fprintf('\nAnalytical expected values\n');
+fprintf('                                       The average value is\t%0.4f.\n', EY);
+fprintf('                                  The standard deviation is\t%0.4f.\n', sY);
+fprintf('   The probability of rolling a 6 given the roll is >= 4 is\t%0.4f.\n', P_Y6_Yge4);
+
+fprintf('\nRelative error of 1000 trial simulation\n');
+fprintf('                                    of the average value is\t%+0.4f.\n', errEX);
+fprintf('                               of the standard deviation is\t%+0.4f.\n', errSX);
+fprintf('of the probability of rolling a 6 given the roll is >= 4 is\t%+0.4f.\n', err_P_X6_Xge4);
+
 
 % finish
 fprintf('\nDone.\n')
@@ -95,7 +124,7 @@ function [EX, sX, P_X6_Xge4] = computeProperties(img, nImg, cards, freqs, nTrial
         % accumulate the cardinalities
         nXge4 = (nXge4 + cards(k));
     end % for k
-    P_Xge4 = nXge4/nTrials;
+    P_Xge4 = (nXge4/nTrials);
     % Well,
     %     P(X = 6|X >= 4) = P(X = 6, X >= 4)/P{X >= 4}
     %                     = P{X = 6}/P{X >= 4}.
