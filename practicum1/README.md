@@ -1,4 +1,4 @@
-# /practicum-1
+# /practicum-1/
 ### Leomar Durán
 
 A Matlab project that considers an unfair die with 20% probability

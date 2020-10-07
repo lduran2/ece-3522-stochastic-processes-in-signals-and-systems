@@ -5,10 +5,11 @@
 %      By: Leomar Duran <https://github.com/lduran2>
 %    When: 2020-10-07t05:56
 %     For: ECE 3522/Stochastic Processes
-% Version: 1.6
+% Version: 1.7
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CHANGELOG
-%     1.4 - Calculated expectation, standard deviation,
+%     1.7 - Moved computation of properties into its own function.
+%     1.6 - Calculated expectation, standard deviation,
 %           P(X = 6|X >= 4).
 %     1.4 - Calculated, displayed and stem plotted relative
 %           frequencies.
@@ -53,37 +54,54 @@ xlim([1,(nImgX + 0.5)])                         % k in Img(X)
 ylim([0,(max(PMF) + 0.05)])                     % PX(k) in [0,1]
 
 %% Part 2
-% Using the above simulated results, compute and report the following
-% values: average value,
-EX = (imgX*(freqs'));   % calculate the expected value of X
-
-% standard deviation,
-EX2 = ((imgX.^2)*(freqs')); % calculate the expected value of X^2
-varX = (EX2 - ((EX)^2));    % calculate variance Var(X) := EX^2 - (EX)^2
-sX = sqrt(varX);            % calculate standard deviation : sX^2 = Var(X)
-
-% and conditional probability P(X = 6|X >= 4)
-% initialize |X >= 4|
-nXge4 = 0;
-% loop through X values : X >= 4
-for k = 4:nImgX
-    % accumulate the cardinalities
-    nXge4 = (nXge4 + cards(k));
-end % for k
-P_Xge4 = nXge4/N_ROLLS;
-% Well,
-%     P(X = 6|X >= 4) = P(X = 6, X >= 4)/P{X >= 4}
-%                     = P{X = 6}/P{X >= 4}.
-% So calculate
-P_X6_Xge4 = freqs(6)/P_Xge4;
+% Compute the expectation, standard deviation, P(X = 6|X >= 4)
+[EX, sX, P_X6_Xge4] = computeProperties(imgX, nImgX, cards, freqs, N_ROLLS);
 
 % display the results
-fprintf('\n          The average value of X is\t%0.4f.\n', EX);
-fprintf(  '     The standard deviation of X is\t%0.4f.\n', sX);
-fprintf(  'The probability X=6 given X >= 4 is\t%0.4f.\n', P_X6_Xge4);
+fprintf('\n                            The average value of X is\t%0.4f.\n', EX);
+fprintf(  '                       The standard deviation of X is\t%0.4f.\n', sX);
+fprintf(  'The probability rolling a 6 given the roll is >= 4 is\t%0.4f.\n', P_X6_Xge4);
 
 % finish
 fprintf('\nDone.\n')
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Computes the properties for Part 2,
+% @params
+%     img -- the image of the discrete random variable
+%     nImg -- the number of elements in img
+%     cards -- the cardinalities of events in the random variable
+%     freqs -- the frequencies of events in the random variable
+%     nTrials -- the number of trials, s.t. freqs ~ cards/nTrials
+% @returns
+%     EX -- the expected value
+%     sX -- the standard deviation
+%     P_X6_Xge4 -- the probability of rolling a 6 given the 
+function [EX, sX, P_X6_Xge4] = computeProperties(img, nImg, cards, freqs, nTrials)
+    % Using the above simulated results, compute and report the following
+    % values: average value,
+    EX = (img*(freqs'));   % calculate the expected value of X
+
+    % standard deviation,
+    EX2 = ((img.^2)*(freqs')); % calculate the expected value of X^2
+    varX = (EX2 - ((EX)^2));    % calculate variance Var(X) := EX^2 - (EX)^2
+    sX = sqrt(varX);            % calculate standard deviation : sX^2 = Var(X)
+
+    % and conditional probability P(X = 6|X >= 4)
+    % initialize |X >= 4|
+    nXge4 = 0;
+    % loop through X values : X >= 4
+    for k = 4:nImg
+        % accumulate the cardinalities
+        nXge4 = (nXge4 + cards(k));
+    end % for k
+    P_Xge4 = nXge4/nTrials;
+    % Well,
+    %     P(X = 6|X >= 4) = P(X = 6, X >= 4)/P{X >= 4}
+    %                     = P{X = 6}/P{X >= 4}.
+    % So calculate
+    P_X6_Xge4 = freqs(6)/P_Xge4;
+end % computeProperties(img, freqs)
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
