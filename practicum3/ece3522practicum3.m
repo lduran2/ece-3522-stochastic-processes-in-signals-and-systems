@@ -16,11 +16,9 @@
 %           erroneous detection at SNR = 5 dB.
 
 clear
+% parameters
 N = 1e5;                                % number of bits transmitted
 SNR_dB = 5; %[dB]                       % signal-to-noise ratio
-
-% Calculate v for SNR = 5 dB
-v = calcSignalMag(SNR_dB);              % transmit signal magnitude
 
 
 %% Objective 1
@@ -38,17 +36,7 @@ display(P_theo_err_5_dB);
 % which is the ratio between the number of erroneously detected bits
 % and the total number of transmitted bits, for input SNR of 5 dB.
 
-% SNR is alread 5 dB
-
-% from the lab manual appendix
-signal = randi([0 1], N, 1);            % bit stream with 0's & 1's
-noise = randn(N,1);                     % additive Gaussian noise
-received = (signal*2-1)*v + noise;      % received noisy signal
-detect = (received > 0);                % detected result
-num_error = sum(abs(detect-signal));    % # of erroneously detected bits
-
-% calculate the simulated bit error rate (BER)
-BER = (num_error/N);
+BER = calcBer(N, SNR_dB);
 fprintf('Simulated bit error rate at (SNR = 5 dB),');
 display(BER);
 
@@ -65,6 +53,25 @@ function P_theo_err = calcTheoErr(SNR_dB)
     v = calcSignalMag(SNR_dB);          % transmit signal magnitude
     P_theo_err = normcdf(-v);
 end %function calcTheoErr(SNR_dB)
+
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Calculates the simulated bit error rate (BER).
+% @params
+%     SNR_dB -- the signal to noise ratio [dB]
+%     N - the number of trials, or transmitted bits
+% @returns the simulated bit error rate (BER).
+function ber = calcBer(N, SNR_dB)
+    v = calcSignalMag(SNR_dB);              % transmit signal magnitude
+    % from the lab manual appendix
+    signal = randi([0 1], N, 1);            % bit stream with 0's & 1's
+    noise = randn(N,1);                     % additive Gaussian noise
+    received = (signal*2-1)*v + noise;      % received noisy signal
+    detect = (received > 0);                % detected result
+    num_error = sum(abs(detect-signal));    % # of erroneously detected bits
+    % calculate 
+    ber = (num_error/N);                    % the simulated bit error rate (BER)
+end
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
